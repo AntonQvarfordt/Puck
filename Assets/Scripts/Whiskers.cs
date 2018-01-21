@@ -14,15 +14,17 @@ public class Whiskers : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (IgnoreList.Contains(other))
+        if (IgnoreList.Contains(other) || Player.Instance.Disabled)
             return;
 
         if (other.gameObject.layer == LayerMask.NameToLayer("ShatterMesh"))
         {
-
+            if (!Player.Instance.IsBoosting)
+            {
+                Player.Instance.Disable();
+            }
 
             IgnoreList.Add(other);
-            //Debug.Log("HitPiece");
             var rBody = other.GetComponent<Rigidbody>();
             rBody.isKinematic = false;
             AddForce(new Vector3(0, 3, -1) * ExplodeForce, rBody, 4);

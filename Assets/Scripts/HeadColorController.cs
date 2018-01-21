@@ -52,11 +52,11 @@ public class HeadColorController : MonoBehaviour
         headColorScript.FadeDestroy();
     }
 
-    public void FadeDestroy (float time = 0.5f)
+    public void FadeDestroy (float time = 0.5f, float delay = 0)
     {
         var newScale = transform.localScale * 2f;
-        transform.DOScale(newScale, time);
-        _headSprite.DOColor(Color.clear, time);
+        transform.DOScale(newScale, time).SetDelay(delay);
+        _headSprite.DOColor(Color.clear, time).SetDelay(delay);
     }
 
 }

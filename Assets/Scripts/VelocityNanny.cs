@@ -11,11 +11,13 @@ public class VelocityNanny : MonoBehaviour
     public float SmoothingX;
     public float SmoothingY = 1;
 
-    private Vector2 _targetVelocityX = Vector3.zero;
-    private float _targetVelocityY = 20f;
+    private float _targetVelocityX = 0f;
+    private float _targetVelocityY = 10f;
 
-    private Vector3 velocityRefX;
-    private Vector3 velocityRefY;
+    private float velocityRefX;
+    private float velocityRefY;
+
+    private bool _disableConfigured;
 
     private void Awake()
     {
@@ -27,18 +29,25 @@ public class VelocityNanny : MonoBehaviour
         if (!Active)
             return;
 
-        var newVelocityX = Vector3.SmoothDamp(_rBody.velocity, _targetVelocityX, ref velocityRefX, SmoothingX);
-
-        var newVelocityY = _rBody.velocity;
-
-        if (_rBody.velocity.y > 20)
+        if (Player.Instance.Disabled && !_disableConfigured)
         {
-            newVelocityY = Vector3.SmoothDamp(_rBody.velocity, new Vector2(_targetVelocityX.x, _targetVelocityY), ref velocityRefY, SmoothingY);
+            DisableConfigure();
         }
 
-        newVelocityX.y = _rBody.velocity.y;
+        var newVelocity = _rBody.velocity;
 
-        _rBody.velocity = new Vector2(newVelocityX.x, newVelocityY.y);
+        newVelocity.x = Mathf.SmoothDamp(newVelocity.x, _targetVelocityX, ref velocityRefX, SmoothingX);
+
+        if (_rBody.velocity.y > 10f && !_disableConfigured)
+        {
+            newVelocity.y = Mathf.SmoothDamp(_rBody.velocity.y, _targetVelocityY, ref velocityRefY, SmoothingY);
+        }
+        else if (_disableConfigured)
+        {
+            newVelocity.y = Mathf.SmoothDamp(_rBody.velocity.y, _targetVelocityY, ref velocityRefY, SmoothingY);
+        }
+
+        _rBody.velocity = newVelocity;
         //if (_rBody.velocity.x > 0)
         //{
         //    var newVelocity2 = _rBody.velocity;
@@ -49,6 +58,16 @@ public class VelocityNanny : MonoBehaviour
 
         //    _rBody.velocity = newVelocity2;
         //}
+    }
+
+    private void DisableConfigure()
+    {
+        Debug.Log("Disable Configuring");
+
+        _targetVelocityY = 0f;
+        SmoothingX = 0.1f;
+        SmoothingY = 0.1f;
+        _disableConfigured = true;
     }
 
 }

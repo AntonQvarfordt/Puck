@@ -10,10 +10,10 @@ using UnityStandardAssets._2D;
 public class Player : MonoBehaviour
 {
     public static Player Instance;
-
+    public bool Disabled;
     public int BoostTime;
 
-    public HeadColorController HeadColors;
+    public VisAnimation VisController;
     public Animator VisAnimation;
 
     public Vector2 HorizontalSwipeForce;
@@ -31,6 +31,8 @@ public class Player : MonoBehaviour
         get { return _velocityMagnitude; }
     }
 
+    private bool _isBoosting;
+
     [SerializeField]
     private bool _allowBoost = true;
     [SerializeField]
@@ -41,12 +43,16 @@ public class Player : MonoBehaviour
     private float _defaultDrag;
     private float _refVelocity;
 
+    public bool IsBoosting
+    {
+        get { return _isBoosting; }
+    }
+
     private void Awake()
     {
         Instance = this;
         _rigidbody = GetComponent<Rigidbody2D>();
         _defaultDrag = _rigidbody.drag;
-        
     }
 
     private void Start()
@@ -58,48 +64,43 @@ public class Player : MonoBehaviour
     {
         _velocityMagnitude = _rigidbody.velocity.magnitude;
 
-        //if (_rigidbody.drag != _defaultDrag)
-        //{
-        //    _rigidbody.drag = Mathf.SmoothDamp(_rigidbody.drag, _defaultDrag, ref _refVelocity, DragSmoothTime);
-        //}
+        if (Input.GetKeyDown("e"))
+        {
+            Disable();
+        }
     }
-
-    //private void FixedUpdate()
-    //{
-    //    _rigidbody.velocity = new Vector2(Mathf.Clamp(_rigidbody.velocity.x, -40f, 40f), Mathf.Clamp(_rigidbody.velocity.y, 0f, 20));
-    //}
 
     public void SwipeLeft()
     {
-        if (!_allowBoost)
+        if (!_allowBoost || Disabled)
             return;
 
         AddForce(new Vector2(-HorizontalSwipeForce.x, 0) * ForceMultiplier * 4, 3);
 
-        DisableBoost();
+        BoostStart();
     }
 
     public void SwipeRight()
     {
-        if (!_allowBoost)
+        if (!_allowBoost || Disabled)
             return;
-
+       
         AddForce(new Vector2(HorizontalSwipeForce.x, 0) * ForceMultiplier * 4, 3);
 
-        DisableBoost();
+        BoostStart();
 
     }
 
     public void SwipeUp()
     {
-        if (!_allowBoost)
+        if (!_allowBoost || Disabled)
             return;
 
         AddForce(new Vector2(VerticalSwipeForce.x, VerticalSwipeForce.y) * ForceMultiplier, 3);
 
         BoostParticles.Play();
 
-        DisableBoost();
+        BoostStart();
     }
 
     public void AddForce(Vector2 force, int overIterations = 10, int timeStep = 0)
@@ -125,7 +126,7 @@ public class Player : MonoBehaviour
                 yield return new WaitForSeconds(timeStep);
         }
 
-        CameraShakeScript.ShakeCamera(0.6f, 0.3f);
+        CameraShakeScript.ShakeCamera(0.4f, 0.7f);
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
@@ -169,16 +170,33 @@ public class Player : MonoBehaviour
         StartCoroutine(TimedUnlock(1, () => _allowWallBoost = true));
     }
 
-    public void DisableBoost ()
+    public void BoostStart ()
     {
-        HeadColors.EmptyColors();
+        _isBoosting = true;
+        VisController.HeadColors.EmptyColors();
         _allowBoost = false;
-        StartCoroutine(TimedUnlock(BoostTime, EnableBoost));
+        StartCoroutine(TimedUnlock(BoostTime, BoostEnd));
     }
          
-    public void EnableBoost()
+    public void BoostEnd()
     {
+        _isBoosting = false;
         _allowBoost = true;
-        HeadColors.IdleColors();
+        VisController.HeadColors.IdleColors();
+    }
+
+    public void Disable()
+    {
+        Disabled = true;
+        CameraShakeScript.ShakeCamera(1f, 1f);
+        _rigidbody.velocity = Vector2.zero;
+        AddForce(Vector2.down * ForceMultiplier);
+        VisController.HeadColors.FadeDestroy(1, 0.5f);
+        Invoke("RestartLevel", 2);
+    }
+
+    private void RestartLevel ()
+    {
+        GameManager.ResetLevel();
     }
 }
