@@ -7,7 +7,9 @@ namespace UnityStandardAssets._2D
     {
         public Transform target;
 
-        private Vector3 offset;
+        private Vector3 positionOffset;
+
+        private Vector3 rotationOffset;
         [SerializeField]
         Vector3 _velocityRef;
 
@@ -17,7 +19,8 @@ namespace UnityStandardAssets._2D
 
         private void Awake()
         {
-            offset = transform.position - target.position;
+            positionOffset = transform.position - target.position;
+            rotationOffset = transform.localRotation.eulerAngles;
         }
 
         private void Update()
@@ -28,7 +31,7 @@ namespace UnityStandardAssets._2D
             _targetPos = target.position;
             _targetPos.x = 0;
 
-            Vector3 newPos = Vector3.SmoothDamp(transform.position, _targetPos + offset, ref _velocityRef, _damping);
+            Vector3 newPos = Vector3.SmoothDamp(transform.position, _targetPos + positionOffset, ref _velocityRef, _damping);
             transform.position = newPos;
         }
     }

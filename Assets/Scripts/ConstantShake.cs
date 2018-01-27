@@ -4,9 +4,6 @@ using UnityEngine;
 
 public class ConstantShake : MonoBehaviour
 {
-
-    public bool debugMode = false;//Test-run/Call ShakeCamera() on start
-
     private float shakeAmount = 1;//The amount to shake this frame.
 
     //Readonly values...
@@ -23,7 +20,7 @@ public class ConstantShake : MonoBehaviour
         Vector3 rotationAmount = Random.insideUnitSphere * shakeAmount;//A Vector3 to add to the Local Rotation
         rotationAmount.z = 0;//Don't change the Z; it looks funny.
 
-        shakePercentage = Player.Instance.GetVelocity / 20;
+        shakePercentage = Player.Instance.GetVelocity / 10;
 
         shakeAmount *= shakePercentage;//Set the amount of shake (% * startAmount).
 

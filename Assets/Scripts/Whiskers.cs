@@ -5,8 +5,6 @@ using DG.Tweening;
 
 public class Whiskers : MonoBehaviour
 {
-
-
     public List<Collider> IgnoreList = new List<Collider>();
     public float ExplodeForce = 400;
 
@@ -29,10 +27,8 @@ public class Whiskers : MonoBehaviour
             rBody.isKinematic = false;
             AddForce(new Vector3(0, 3, -1) * ExplodeForce, rBody, 4);
             ShakeCam();
-
         }
     }
-
 
     private void ShakeCam()
     {
@@ -62,9 +58,8 @@ public class Whiskers : MonoBehaviour
 
         for (int i = 0; i < overIterations; i++)
         {
-            //Debug.Log(force);
             rBody.AddExplosionForce(ExplodeForce, transform.position, 20);
-            //rBody.AddTorque(force.x);
+            rBody.AddTorque(rBody.velocity.x * force);
 
             if (timeStep == 0)
                 yield return new WaitForFixedUpdate();
